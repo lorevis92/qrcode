@@ -6,7 +6,9 @@ export default function Navbar() {
       zIndex: 100,
       background: '#FFFFFF',
       borderBottom: '1px solid #E8E8E8',
-      height: 56,
+      height: 'auto',
+      minHeight: 56,
+      overflow: 'hidden',
       padding: '0 24px',
       display: 'flex',
       flexDirection: 'row',
@@ -14,7 +16,7 @@ export default function Navbar() {
       justifyContent: 'space-between',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <img src="/logo-wisi.png" height={52} alt="WiSi logo" style={{ display: 'block' }} />
+        <img src="/logo-wisi.png" height={36} alt="WiSi logo" style={{ display: 'block' }} />
         <span style={{
           fontFamily: 'var(--font-ui)',
           fontWeight: 800,

@@ -304,6 +304,7 @@ async function drawCardCanvas(canvas, qrSrc, template, topText, bottomText, card
 export default function QRGenerator() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [installState, setInstallState] = useState('idle')
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
 
   const [activeType, setActiveType] = useState('url')
   const [fields, setFields] = useState({})
@@ -342,6 +343,12 @@ export default function QRGenerator() {
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', () => setInstallPrompt(null))
     return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 700)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
   }, [])
 
   async function handleInstall() {
@@ -525,7 +532,7 @@ export default function QRGenerator() {
   })
 
   return (
-    <div style={{ maxWidth: 1060, margin: '0 auto', padding: '40px 24px' }}>
+    <div style={{ maxWidth: 1060, margin: '0 auto', padding: isMobile ? '20px 16px' : '40px 24px' }}>
 
       {/* Hidden QR container — always mounted regardless of active tab */}
       <div ref={qrContainerRef} style={{ display: 'none' }} />
@@ -534,7 +541,8 @@ export default function QRGenerator() {
       {installPrompt && (
         <div style={{
           background: '#111111', borderRadius: 6, padding: '12px 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between',
           gap: 16, flexWrap: 'wrap', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -576,7 +584,7 @@ export default function QRGenerator() {
 
       {/* ── GENERATOR TAB ── */}
       {mainTab === 'generator' && (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 24, alignItems: 'start' }}>
 
         {/* Left column */}
         <div>
@@ -585,14 +593,14 @@ export default function QRGenerator() {
           <div style={cardStyle}>
             <div style={cardTitleStyle}>QR Type</div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 24 }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: 6, flexWrap: 'wrap', marginBottom: 24 }}>
               {TYPES.map(t => (
                 <button key={t.id} onClick={() => handleTypeChange(t.id)} style={pillBtn(activeType === t.id)}>
                   {t.label}
                 </button>
               ))}
 
-              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ marginLeft: isMobile ? 0 : 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} />
                 {logoFile ? (
                   <>
@@ -656,7 +664,7 @@ export default function QRGenerator() {
         </div>
 
         {/* Right column — QR preview */}
-        <div style={{ position: 'sticky', top: 76, alignSelf: 'start' }}>
+        <div style={{ position: isMobile ? 'static' : 'sticky', top: 76, alignSelf: 'start', order: isMobile ? -1 : 0 }}>
           <div style={cardStyle}>
             <div style={cardTitleStyle}>Preview</div>
 
@@ -726,7 +734,7 @@ export default function QRGenerator() {
 
       {/* ── DESIGN STUDIO TAB ── */}
       {mainTab === 'design' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 24, alignItems: 'start' }}>
 
           {/* Left column — tabs + content */}
           <div>
@@ -848,7 +856,7 @@ export default function QRGenerator() {
           </div>
 
           {/* Right column — contextual preview */}
-          <div style={{ position: 'sticky', top: 76, alignSelf: 'start' }}>
+          <div style={{ position: isMobile ? 'static' : 'sticky', top: 76, alignSelf: 'start', order: isMobile ? -1 : 0 }}>
             {activeDesignSection === 'qr' ? (
               <div style={cardStyle}>
                 <div style={cardTitleStyle}>Preview</div>

@@ -4,7 +4,6 @@ export default function Footer() {
       borderTop: '1px solid #E8E8E8',
       background: '#F8F8F8',
       padding: '20px 24px',
-      marginTop: 40,
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
