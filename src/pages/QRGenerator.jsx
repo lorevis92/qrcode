@@ -302,6 +302,9 @@ async function drawCardCanvas(canvas, qrSrc, template, topText, bottomText, card
 }
 
 export default function QRGenerator() {
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [installState, setInstallState] = useState('idle')
+
   const [activeType, setActiveType] = useState('url')
   const [fields, setFields] = useState({})
   const [fgColor, setFgColor] = useState('#111111')
@@ -333,6 +336,23 @@ export default function QRGenerator() {
   const fileInputRef = useRef(null)
 
   const content = buildQrContent(activeType, fields)
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setInstallPrompt(null))
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  async function handleInstall() {
+    if (!installPrompt) return
+    setInstallState('installing')
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    setInstallState(outcome === 'accepted' ? 'done' : 'dismissed')
+    setInstallPrompt(null)
+    setTimeout(() => setInstallState('idle'), 3000)
+  }
 
   // Manage logo object URL lifecycle
   useEffect(() => {
@@ -509,6 +529,40 @@ export default function QRGenerator() {
 
       {/* Hidden QR container — always mounted regardless of active tab */}
       <div ref={qrContainerRef} style={{ display: 'none' }} />
+
+      {/* ── PWA install banner ── */}
+      {installPrompt && (
+        <div style={{
+          background: '#111111', borderRadius: 6, padding: '12px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 16, flexWrap: 'wrap', marginBottom: 20,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img src="/pwa-icon.png" style={{ width: 32, height: 32, borderRadius: 6 }} alt="" />
+            <div>
+              <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 13, color: '#FFFFFF', margin: 0 }}>Install WisiQR</p>
+              <p style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: '#AAAAAA', margin: 0 }}>Add to your home screen for quick access</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {installState === 'installing' && <span style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: '#AAAAAA' }}>Installing…</span>}
+            {installState === 'done' && <span style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: '#00996A' }}>✓ Installed!</span>}
+            {installState === 'dismissed' && <span style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: '#AAAAAA' }}>Dismissed</span>}
+            <button
+              onClick={() => setInstallPrompt(null)}
+              style={{ background: 'transparent', border: '1px solid #333333', borderRadius: 3, padding: '7px 14px', fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 11, color: '#AAAAAA', textTransform: 'uppercase', cursor: 'pointer' }}
+            >
+              Not now
+            </button>
+            <button
+              onClick={handleInstall}
+              style={{ background: '#E8352A', border: 'none', borderRadius: 3, padding: '7px 14px', fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 11, color: '#FFFFFF', textTransform: 'uppercase', cursor: 'pointer' }}
+            >
+              Install App
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Main tab pills ── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
