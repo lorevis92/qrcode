@@ -1,3 +1,10 @@
+.qr-render-container canvas,
+.qr-render-container svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
